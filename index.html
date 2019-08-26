@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/2968e744e1.js"></script>
-    <title>Web Layout</title>
+    <title>Todo App</title>
     <style>
         body,html
         {
@@ -18,8 +18,8 @@
         {
             margin: 0;
             display: grid;
-            grid-template-columns: 20% auto;
-            grid-template-rows: 20% auto 10%;
+            grid-template-columns: 16% auto;
+            grid-template-rows: 15% auto 8%;
             grid-template-areas: 
                 "header header"
                 "aside  main"
@@ -38,6 +38,15 @@
             font-family: 'Raleway', sans-serif;
             font-weight: 500;
         }
+
+        button:hover
+        {
+            background-color: white;
+            color:#0097a7;
+            border: 2px solid #0097a7 ;
+        }
+
+        
 
         a{
             color: #009688;
@@ -138,27 +147,18 @@
             padding: 30px; */
             grid-gap: 2em;
         }
+       
 
         #todo_content
         {
             grid-area: todo_content;
         }
 
-        #todo_item
-        {
-            
-            font-weight: bold;
-            
-        }
-
-        #item_list
-        {
-            grid-area: item_list;
-        }
-
+      
         #edit
         {
             grid-area: edit;
+           
            
         }
 
@@ -178,7 +178,7 @@
             font-size: 20px;
         }
 
-        #search
+        #add_and_search
         {
             grid-area: search;
             font-family: 'Raleway', sans-serif;
@@ -190,13 +190,16 @@
             height: 35px;
             padding: 10px;
             margin-left: 5px;
-            margin-top: 5px; 
+            margin-top: 5px;
+            letter-spacing: 4px;
+            word-spacing: 3px; 
         }
 
         #search::placeholder
         {
             
             color: #B0BEC5;
+            font-weight: lighter;
             
         }
         
@@ -255,6 +258,14 @@
             color: #ef5350;
         }
 
+        #todo_content
+        {
+            font-size: 16px;
+            font-family: 'Raleway', sans-serif; 
+            padding: 30px;
+            font-weight: 400;
+        }
+
       
 
         
@@ -283,7 +294,7 @@
         <button class="sidebar" id="clear">Clear</button>
     </aside> 
     <main>
-        <input type="text" placeholder="Type here" id="search">
+        <input type="text" placeholder="Type here to search or add" id="add_and_search">
         <button id="add">Add</button>
     
             <table id="todo_content"></table>

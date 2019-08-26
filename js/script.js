@@ -22,25 +22,61 @@ document.onreadystatechange = function () {
       Store.Clear();
   })
 
+  
+
   document.querySelector("#todo_content").addEventListener("click",function(e){
-      var target = e.target;
-      var parent = target.parentElement.parentElement;
-      var parent_id = parent.getAttribute("id");
+      let target = e.target;
+      let parent = target.parentElement.parentElement;
+      let parent_id = parent.getAttribute("id");
+      //console.log(target);
 
     if(target.innerHTML == "Delete")
     {
         RemoveTodo(parent_id);  
         ClearDom(parent);
     }
-    else
+    else if(target.innerHTML == "Edit")
     {
         ShowModal();
-        EditTodo(parent_id);
-
+        EditTodo(parent_id,parent);
+        
     }
-      console.log(target.innerHTML);
+
+    else
+    {
+        console.log("status clicked");
+        // document.getElementById("status").setAttribute("class","fas fa-circle");
+        // document.getElementById("status").style.color = "green";
+        ToggleStatus(target.parentElement.getAttribute("id"));
+        ClearDom(document.getElementById("todo_content"));
+        PopulateTodoList();
+        
+    }
+      
      
   })
+
+
+
+  function ToggleStatus(parent_id)
+  {
+      let i;
+      
+      for(i=0;i<todo_list.length;i++)
+      {
+          
+          if(todo_list[i].id == parent_id)
+          {
+            
+              todo_list[i].status = Math.abs(todo_list[i].status-1);
+              console.log(todo_list[i].status);
+              Store.SetTodo();
+              break;
+          }
+      }
+      
+
+  }
 
   function ShowModal()
   {
@@ -54,7 +90,7 @@ document.querySelector('.close').addEventListener("click", function() {
 	document.querySelector('.bg-modal').style.display = "none";
 });
 
-function EditTodo(target_id)
+function EditTodo(target_id,parent)
 {
     //document.getElementById("text_in_modal").value = todo_list[target_id];
     var it;
@@ -64,15 +100,20 @@ function EditTodo(target_id)
           {
             document.getElementById("text_in_modal").value = todo_list[it].data;
             current_edit_id = it;
+            
+            break;
           }
       }
-
+ 
 }
+
 
 document.querySelector("#add_in_modal").addEventListener("click",() => {
     todo_list[current_edit_id].data = document.getElementById("text_in_modal").value;
     Store.SetTodo();
-    document.querySelector(".bg-modal").style.display = none;
+    document.querySelector(".bg-modal").style.display = 'none';
+    ClearDom(document.getElementById("todo_content"));
+    PopulateTodoList();
     
 })
 
@@ -115,36 +156,89 @@ document.querySelector("#add_in_modal").addEventListener("click",() => {
 
   function ClearDom(node)
   {
-    // var table = document.getElementById("todo_content");
-    console.log("Child");
+    
     todo_list_length = todo_list.length;
     var child = node.childNodes[0];
     while (child) { 
         node.removeChild(child); 
         child = node.lastElementChild; 
     }
-    todo_list = [];
+    //todo_list = [];
   }
+
+  
 
   function PopulateTodoList()
   {
-    todo_list.forEach(element => {
-
-        PopulateTodoDom(element.data,element.id);
-    });
+    for(let i=0;i<todo_list.length;i++)
+    {
+        PopulateTodoDom(i);
+    }
   }
 
-  function PopulateTodoDom(todo_value,todo_id)
+  function IncompleteStatusIconBuilder()
+  {
+    var status_icon = document.createElement("i");
+    status_icon.setAttribute("id","status");
+    status_icon.setAttribute("class","far fa-circle");
+    status_icon.style.fontSize = "30px";
+    status_icon.style.marginTop = "16px";
+    status_icon.style.marginLeft = "16px";
+    status_icon.style.marginRight = "16px";
+    return status_icon;
+  }
+
+  function CompleteStatusIconBuilder()
+  {
+    var status_icon = document.createElement("i");
+    status_icon.setAttribute("id","status");
+    status_icon.setAttribute("class","fas fa-circle");
+    status_icon.style.fontSize = "30px";
+    status_icon.style.marginTop = "16px";
+    status_icon.style.marginLeft = "16px";
+    status_icon.style.marginRight = "16px";
+    return status_icon;
+  }
+
+  
+ function MakeEditButtonContent()
+ {
+     return "<button id=edit style='margin:10px;padding:10px'>Edit</button></td>";
+ }
+
+ function MakeDeleteButtonContent()
+ {
+    return "<button id=delete style='margin:10px;padding:10px'>Delete</button>";
+ }
+
+ function MakeTodoContent(todo_index)
+ {
+    if(!todo_list[todo_index].status)
+    {
+        return "<p>"+todo_list[todo_index].data+"</p>";
+    }
+    else
+    {
+        return "<p><del>"+todo_list[todo_index].data+"</del></p>";   
+    }
+ }
+
+
+
+
+  function PopulateTodoDom(todo_index)
   {
     var table = document.getElementById("todo_content");
     var row = document.createElement("tr");
-    row.setAttribute("id",`${todo_id}`)
+    row.setAttribute("id",`${todo_list[todo_index].id}`);
+    status_icon = (todo_list[todo_index].status)?CompleteStatusIconBuilder():IncompleteStatusIconBuilder();
     var todo = document.createElement("td");
     var edit_button = document.createElement("td");
     var delete_button = document.createElement("td");
-    todo.innerHTML = "<p>"+todo_value+"</p>";
-    edit_button.innerHTML = "<button id=edit+>Edit</button></td>";
-    delete_button.innerHTML = "<button id=delete>Delete</button>";
+    todo.innerHTML = MakeTodoContent(todo_index);
+    edit_button.innerHTML = MakeEditButtonContent();
+    delete_button.innerHTML = MakeDeleteButtonContent();
+    row.append(status_icon);
     row.append(todo);
     row.append(edit_button);
     row.append(delete_button);
@@ -155,10 +249,26 @@ document.querySelector("#add_in_modal").addEventListener("click",() => {
 
 document.getElementById("add").addEventListener("click", function(){
     // console.log(document.getElementById("search").value);
-    AddTodo(document.getElementById("search").value)
-    document.getElementById("search").value  = "";
+    ClearDom(document.getElementById("todo_content"));
+    PopulateTodoList();
+    let todoValue = document.getElementById("add_and_search").value.trim();
+    if(todoValue != "" && !TodoExists(todoValue))
+        AddTodo(todoValue);
+    document.getElementById("add_and_search").value  = "";
     //console.log("Hello");
   });
+
+  function TodoExists(todoValue)
+  {
+      todo_list.forEach(todo => {
+
+        if(todo == todoValue)
+            return true;
+          
+      });
+
+      return false;
+  }
 
   
 
@@ -166,16 +276,19 @@ document.getElementById("add").addEventListener("click", function(){
   {
       
     current_id = current_id+1;
-    todo_list.push({id:current_id,data:todo_value})
+    let status = 0; 
+    todo_list.push({id:current_id,data:todo_value,status:status});
     var table = document.getElementById("todo_content");
     var row = document.createElement("tr");
-    row.setAttribute("id",`${current_id}`)
+    row.setAttribute("id",`${current_id}`);
+    status_icon = IncompleteStatusIconBuilder();
     var todo = document.createElement("td");
     var edit_button = document.createElement("td");
     var delete_button = document.createElement("td");
     todo.innerHTML = "<p>"+todo_value+"</p>";
-    edit_button.innerHTML = "<button id=edit+>Edit</button></td>";
-    delete_button.innerHTML = "<button id=delete>Delete</button>";
+    edit_button.innerHTML = MakeEditButtonContent();
+    delete_button.innerHTML = MakeDeleteButtonContent();
+    row.append(status_icon);
     row.append(todo);
     row.append(edit_button);
     row.append(delete_button);
@@ -184,6 +297,41 @@ document.getElementById("add").addEventListener("click", function(){
     ViewTodo();
    
   }
+
+  document.getElementById("add_and_search").addEventListener("keyup",(e) => {
+    let searchKeyword = document.getElementById("add_and_search").value;
+    console.log(searchKeyword);
+    if(searchKeyword == "")
+    {
+        ClearDom(document.getElementById("todo_content"));
+        PopulateTodoList();
+    }
+        
+    else
+    {
+        ClearDom(document.getElementById("todo_content"));
+        for(let i = 0;i<todo_list.length;i++)
+        {
+            if(todo_list[i].data.indexOf(searchKeyword) > -1)
+            {
+                console.log(todo_list[i].data);
+                PopulateTodoDom(i);
+            }
+
+            else
+            {
+
+            }
+            
+        }
+
+    }
+    //ClearDom(document.getElementById("todo_content"));
+    
+  })
+
+  
+
 
   function ViewTodo()
   {
